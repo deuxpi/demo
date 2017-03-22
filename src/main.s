@@ -4,24 +4,41 @@ _thi: .res 1, $00
 _tlo: .res 1, $00
 _tmp1: .res 1, $00
 _tmp2: .res 1, $00
+_tmp3: .res 1, $00
+_blink: .res 1, $00
 
 .segment "CODE"
 main:
-    lda $900e ; 4
-    ora #$0f  ; 2
-    sta $900e ; 4
+    lda #$93
+    jsr $ffd2
 
-    lda #$d0
-    sta $900c ; 4
+    lda #$35
+    sta $01
+
+    sei
 
     lda #0
     ldx #0
-    ldy #0
 
 loop:
+    tax
+
+    dec z:_blink
+    bne noblink
+    sta $900f
+    lda #$08
+    sta z:_blink
+noblink:
+
+    txa
+
     ora #$80
     sta $900c
 
+    eor #$7f
+    sta $900d
+
+    txa
     and #$0f  ; 2
     sta $900e ; 4
 
@@ -45,6 +62,13 @@ _nocarry:
 
     lda z:_thi
     asl
+    sta z:_tmp3
+    lda z:_tlo
+    asl
+    bcc nope
+    inc z:_tmp3
+nope:
+    lda z:_tmp3
     and z:_tmp2
     sta z:_tmp2
 
@@ -56,6 +80,7 @@ _nocarry:
 
     ldy #$ff
 wait:
+    nop
     dey
     bne wait
 
