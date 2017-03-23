@@ -12,35 +12,42 @@ main:
     lda #$93
     jsr $ffd2
 
-    lda #$35
-    sta $01
+    ;lda #$35
+    ;sta $01
 
-    sei
+    ;sei
 
-    lda #0
-    ldx #0
+    lda #$6
+    ldy #$8
+blue:
+    dey
+    sta $9600,y
+    bne blue
+
+    lda #$00
 
 loop:
     tax
-
-    dec z:_blink
-    bne noblink
-    sta $900f
-    lda #$08
-    sta z:_blink
-noblink:
-
-    txa
-
     ora #$80
-    sta $900c
-
-    eor #$7f
-    sta $900d
-
+    sta $900b
     txa
     and #$0f  ; 2
     sta $900e ; 4
+    txa
+
+    ldy #$08
+    sta z:_tmp1
+draw:
+    asl z:_tmp1
+    bcc blank
+    lda #$66
+    jmp else
+blank:
+    lda #$20
+else:
+    dey
+    sta $1e00,y
+    bne draw
 
     ldx z:_tlo
     ldy z:_thi
