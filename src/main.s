@@ -1,11 +1,12 @@
 .segment "ZEROPAGE": zeropage
 
-_thi: .res 1, $00
 _tlo: .res 1, $00
+_thi: .res 1, $00
 _tmp1: .res 1, $00
 _tmp2: .res 1, $00
 _tmp3: .res 1, $00
-_blink: .res 1, $00
+_vlo: .res 1, $00
+_vhi: .res 1, $1e
 
 .segment "CODE"
 main:
@@ -16,6 +17,11 @@ main:
     ;sta $01
 
     ;sei
+
+    lda #$00
+    sta _vlo
+    lda #$1e
+    sta _vhi
 
     lda #$6
     ldy #$8
@@ -46,8 +52,17 @@ blank:
     lda #$20
 else:
     dey
-    sta $1e00,y
+    sta (_vlo),y
     bne draw
+
+    lda _vlo
+    clc
+    adc #$16
+    cmp #$c6
+    bcc noover
+    lda #$00
+noover:
+    sta _vlo
 
     ldx z:_tlo
     ldy z:_thi
