@@ -1,6 +1,13 @@
 .segment "ZEROPAGE": zeropage
 
+TMP = $57
+TMP2 = $58
+
+setwavefrequency = $59
+setwaveshiftreg = $60
+
 .segment "CODE"
+
 main:
     lda #255      ; gfx mode
     sta 36869
@@ -8,7 +15,7 @@ main:
     sta 36879
     lda #16+1     ; aux col, volume
     sta 36878
-
+    
 ldx #0                 ; clrscr
 cll:
     lda #1
@@ -121,29 +128,29 @@ irqsg:
 sgjo:
     clc
     rol 7168+( 0*16),x
-    rol 7168+( 1*16)-1,x
-    rol 7168+( 2*16)-2,x
-    rol 7168+( 3*16)-3,x
-    rol 7168+( 4*16)-4,x
-    rol 7168+( 5*16)-5,x
-    rol 7168+( 6*16)-6,x
-    rol 7168+( 7*16)-7,x
-    rol 7168+( 8*16)-8,x
-    rol 7168+( 9*16)-7,x
-    rol 7168+(10*16)-6,x
-    rol 7168+(11*16)-5,x
-    rol 7168+(12*16)-4,x
-    rol 7168+(13*16)-3,x
-    rol 7168+(14*16)-2,x
-    rol 7168+(15*16)-1,x
+    rol 7168+( 1*16)-2,x
+    rol 7168+( 2*16)-4,x
+    rol 7168+( 3*16)-6,x
+    rol 7168+( 4*16)-8,x
+    rol 7168+( 5*16)-6,x
+    rol 7168+( 6*16)-4,x
+    rol 7168+( 7*16)-2,x
+    rol 7168+( 8*16)-0,x
+    rol 7168+( 9*16)-2,x
+    rol 7168+(10*16)-4,x
+    rol 7168+(11*16)-6,x
+    rol 7168+(12*16)-8,x
+    rol 7168+(13*16)-6,x
+    rol 7168+(14*16)-4,x
+    rol 7168+(15*16)-2,x
     rol 7168+(16*16)-0,x
-    rol 7168+(17*16)-1,x
-    rol 7168+(18*16)-2,x
-    rol 7168+(19*16)-3,x
-    rol 7168+(20*16)-4,x
-    rol 7168+(21*16)-5,x
-    rol 7168+(22*16)-6,x
-    rol 7168+(23*16)-7,x
+    rol 7168+(17*16)-2,x
+    rol 7168+(18*16)-4,x
+    rol 7168+(19*16)-6,x
+    rol 7168+(20*16)-8,x
+    rol 7168+(21*16)-6,x
+    rol 7168+(22*16)-4,x
+    rol 7168+(23*16)-2,x
     dex
     bpl sgjo
 
@@ -237,13 +244,13 @@ nextnote:
     and #127
     tax
     lda melody,x
-    sta 36876
+    ;sta 36876
     tay
     lda #1
     bit 251
     bne lipsu
     tya
-    sta 36875
+    ;sta 36875
     lda #2
     bit 251
     bne lipsu
@@ -251,11 +258,11 @@ nextnote:
     bit 251
     beq lipsu2
     tya
-    sta 36874
+    ;sta 36874
     jmp lipsu
 lipsu2:
     lda #0
-    sta 36874
+    ;sta 36874
 lipsu:
     tya
     txa
@@ -263,6 +270,24 @@ lipsu:
     tax
     lda drumtrak,x
     sta 253         ; tai suoraan koodiin.
+
+    lda 251         ; melody
+    and #127
+    tax
+    lda melody,x
+    sta setwavefrequency
+
+    and 251
+    lda #15
+    tax
+    lda viznutwaveforms,x
+    sta setwaveshiftreg
+
+    ldy #11
+    ldx setwavefrequency
+    lda setwaveshiftreg
+    jsr setwave
+
     rts
 
 drums:
@@ -283,3 +308,6 @@ melody:
     .byte 175,000,175,000,201,195,195,195,201,000,175,201,201,000,195,201
     .byte 163,000,163,000,195,187,187,187,195,000,163,000,195,000,187,195
     .byte 163,000,163,000,195,000,187,195,163,000,163,000,195,195,187,183
+
+setwave:
+    .include "setwave.asm"
